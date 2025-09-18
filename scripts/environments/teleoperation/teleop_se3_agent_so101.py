@@ -77,6 +77,10 @@ from isaaclab.envs.mdp.actions.actions_cfg import DifferentialInverseKinematicsA
 from isaaclab.sensors import FrameTransformerCfg
 from isaaclab.sensors.frame_transformer.frame_transformer_cfg import OffsetCfg
 from isaaclab.markers.config import FRAME_MARKER_CFG
+from isaaclab.assets import RigidObjectCfg
+from isaaclab.sim.schemas.schemas_cfg import RigidBodyPropertiesCfg
+from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
+from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 from isaaclab.utils import configclass
 
 # Import base environment configuration
@@ -192,6 +196,49 @@ class SO101CubeStackEnvCfg(StackEnvCfg):
             joint_names=["Jaw"],
             open_command_expr={"Jaw": 0.04},    # Gripper open position
             close_command_expr={"Jaw": 0.0},    # Gripper closed position
+        )
+
+        # Add the missing cube objects for stacking task
+        # Rigid body properties of each cube
+        cube_properties = RigidBodyPropertiesCfg(
+            solver_position_iteration_count=16,
+            solver_velocity_iteration_count=1,
+            max_angular_velocity=1000.0,
+            max_linear_velocity=1000.0,
+            max_depenetration_velocity=5.0,
+            disable_gravity=False,
+        )
+
+        # Set each stacking cube deterministically (adjusted positions for SO-101 workspace)
+        self.scene.cube_1 = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/Cube_1",
+            init_state=RigidObjectCfg.InitialStateCfg(pos=[0.3, 0.0, 0.0203], rot=[1, 0, 0, 0]),
+            spawn=UsdFileCfg(
+                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/blue_block.usd",
+                scale=(1.0, 1.0, 1.0),
+                rigid_props=cube_properties,
+                semantic_tags=[("class", "cube_1")],
+            ),
+        )
+        self.scene.cube_2 = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/Cube_2",
+            init_state=RigidObjectCfg.InitialStateCfg(pos=[0.45, 0.05, 0.0203], rot=[1, 0, 0, 0]),
+            spawn=UsdFileCfg(
+                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/red_block.usd",
+                scale=(1.0, 1.0, 1.0),
+                rigid_props=cube_properties,
+                semantic_tags=[("class", "cube_2")],
+            ),
+        )
+        self.scene.cube_3 = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/Cube_3",
+            init_state=RigidObjectCfg.InitialStateCfg(pos=[0.50, -0.1, 0.0203], rot=[1, 0, 0, 0]),
+            spawn=UsdFileCfg(
+                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/green_block.usd",
+                scale=(1.0, 1.0, 1.0),
+                rigid_props=cube_properties,
+                semantic_tags=[("class", "cube_3")],
+            ),
         )
 
         # Teleoperation device configurations
